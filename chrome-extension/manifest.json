@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "CodeBuddy - AI Coding Helper",
+  "version": "1.0.0",
+  "description": "Get AI-powered hints and guidance for LeetCode problems without spoiling solutions. Perfect for learning and improving coding skills.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://leetcode.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://leetcode.com/problems/*",
+        "https://leetcode.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "author": "CodeBuddy Team",
+  "homepage_url": "https://github.com/yourusername/codebuddy-extension"
+}

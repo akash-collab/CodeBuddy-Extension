@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>CodeBuddy</title>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">💻</span>
+                <h1>CodeBuddy</h1>
+            </div>
+            <div class="subtitle">Smart Coding Helper</div>
+        </header>
+        
+        <main class="main-content">
+            <div class="problem-section">
+                <div class="problem-title" id="problem-title">
+                    <span class="placeholder">Click "Get Hints" to start</span>
+                </div>
+            </div>
+            
+            <div class="hints-section">
+                <div class="hints-container" id="hints">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">🚀</div>
+                        <h3>Ready to get hints?</h3>
+                        <p>Navigate to a LeetCode problem and click the button below to get AI-powered hints and guidance.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button id="getHintBtn" class="primary-btn">
+                    <span class="btn-icon">💡</span>
+                    <span class="btn-text">Get Hints</span>
+                </button>
+                <button id="clearBtn" class="secondary-btn" style="display: none;">
+                    <span class="btn-icon">🗑️</span>
+                    <span class="btn-text">Clear History</span>
+                </button>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <div class="status" id="status"></div>
+        </footer>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
