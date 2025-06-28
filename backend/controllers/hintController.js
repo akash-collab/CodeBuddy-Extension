@@ -11,7 +11,7 @@ const getHintsFromGemini = async (req, res) => {
   // Check if API key is available
   if (!process.env.GEMINI_API_KEY) {
     console.error("❌ GEMINI_API_KEY not found in environment variables");
-    return res.status(500).json({ error: "API key not configured" });
+    return res.status(500).json({ error: "API key not configured. Please add GEMINI_API_KEY to your .env file." });
   }
 
   const prompt = `
@@ -33,7 +33,13 @@ Problem Description: ${description}
 
     console.log("🔍 Making request to Gemini API...");
     
-    const geminiResponse = await fetch(apiUrl, {
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Gemini API request timed out after 15 seconds')), 15000);
+    });
+
+    // Create the fetch promise
+    const fetchPromise = fetch(apiUrl, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -43,6 +49,9 @@ Problem Description: ${description}
         contents: [{ parts: [{ text: prompt }] }],
       }),
     });
+
+    // Race between fetch and timeout
+    const geminiResponse = await Promise.race([fetchPromise, timeoutPromise]);
 
     console.log("📡 Gemini API response status:", geminiResponse.status);
 
@@ -81,12 +90,17 @@ Problem Description: ${description}
       // Fallback: treat the response as plain text
       const hintText = `Hints:\n${responseText}`;
       
-      await ProblemLog.create({
-        title,
-        description,
-        platform: "Leetcode",
-        hintResponse: hintText,
-      });
+      // Try to log to database, but don't fail if it's not available
+      try {
+        await ProblemLog.create({
+          title,
+          description,
+          platform: "Leetcode",
+          hintResponse: hintText,
+        });
+      } catch (dbError) {
+        console.warn("⚠️  Could not log to database:", dbError.message);
+      }
 
       return res.status(200).json({ hints: hintText });
     }
@@ -97,12 +111,17 @@ Problem Description: ${description}
       parsed.encouragement || ""
     ].filter(Boolean).join("\n\n");
 
-    await ProblemLog.create({
-      title,
-      description,
-      platform: "Leetcode",
-      hintResponse: hintText,
-    });
+    // Try to log to database, but don't fail if it's not available
+    try {
+      await ProblemLog.create({
+        title,
+        description,
+        platform: "Leetcode",
+        hintResponse: hintText,
+      });
+    } catch (dbError) {
+      console.warn("⚠️  Could not log to database:", dbError.message);
+    }
 
     console.log("✅ Successfully generated hints");
     return res.status(200).json({ hints: hintText });
@@ -112,4 +131,31 @@ Problem Description: ${description}
   }
 };
 
-module.exports = { getHintsFromGemini };
+// Test endpoint that returns static hints without calling Gemini
+const getTestHints = async (req, res) => {
+  const { title, description } = req.body;
+
+  if (!title || !description) {
+    return res.status(400).json({ error: "Missing title or description" });
+  }
+
+  console.log("🧪 Test endpoint called for:", title);
+
+  // Return static hints for testing
+  const hintText = `Concepts:
+- Dynamic Programming
+- String Manipulation
+- Two Pointers
+
+Hints:
+1. Consider using a two-pointer approach to expand around each character
+2. Think about how to handle even and odd length palindromes
+3. Use dynamic programming to avoid recalculating subproblems
+
+💪 Encouragement: Remember, every expert was once a beginner. Take it one step at a time!`;
+
+  console.log("✅ Test hints generated successfully");
+  return res.status(200).json({ hints: hintText });
+};
+
+module.exports = { getHintsFromGemini, getTestHints };

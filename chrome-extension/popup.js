@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupEventListeners() {
   getHintBtn.addEventListener("click", handleGetHints);
-  clearBtn.addEventListener("click", handleClearHistory);
+  clearBtn.addEventListener("click", clearHistory);
 }
 
 function checkCurrentPage() {
@@ -40,30 +40,65 @@ async function handleGetHints() {
   // Show loading state
   setLoadingState(true);
   updateStatus("Fetching problem data...");
+  console.log("🔧 handleGetHints started");
 
-  chrome.runtime.sendMessage({ type: "FETCH_HINTS" }, async (response) => {
+  // Set a timeout to prevent hanging
+  const timeout = setTimeout(() => {
+    console.warn("⏰ Request timed out after 30 seconds");
     setLoadingState(false);
+    showError("Request timed out. Please try again.");
+    updateStatus("Request timed out");
+  }, 30000);
+
+  try {
+    console.log("📤 Sending FETCH_HINTS message to background script...");
     
-    if (response?.error) {
-      showError(response.error);
-      updateStatus("Error occurred");
-    } else if (response?.hints) {
-      showSuccess(response.title, response.hints);
-      saveData(response.title, response.hints);
-      updateStatus("Hints generated successfully");
-    } else {
-      showWarning("No hints received from server.");
-      updateStatus("No data received");
-    }
-  });
+    chrome.runtime.sendMessage({ type: "FETCH_HINTS" }, (response) => {
+      clearTimeout(timeout); // Clear timeout on response
+      console.log("📥 Received response from background script:", response);
+      setLoadingState(false);
+      
+      // Check for runtime errors
+      if (chrome.runtime.lastError) {
+        console.error("❌ Runtime error:", chrome.runtime.lastError);
+        showError("Failed to communicate with the page. Please refresh the LeetCode page and try again.");
+        updateStatus("Communication error");
+        return;
+      }
+      
+      if (!response) {
+        console.warn("❌ No response received");
+        showError("No response received from background script");
+        updateStatus("No response");
+        return;
+      }
+      
+      if (response?.error) {
+        console.error("❌ Error in response:", response.error);
+        showError(response.error);
+        updateStatus("Error occurred");
+      } else if (response?.hints) {
+        console.log("✅ Success! Got hints:", response.hints.substring(0, 100) + "...");
+        showSuccess(response.title, response.hints);
+        saveData(response.title, response.hints);
+        updateStatus("Hints generated successfully");
+      } else {
+        console.warn("❌ No hints in response:", response);
+        showWarning("No hints received from server.");
+        updateStatus("No data received");
+      }
+    });
+  } catch (error) {
+    clearTimeout(timeout); // Clear timeout on error
+    setLoadingState(false);
+    console.error("❌ Error in handleGetHints:", error);
+    showError("An unexpected error occurred. Please try again.");
+    updateStatus("Unexpected error");
+  }
 }
 
-function handleClearHistory() {
-  chrome.storage.local.remove([STORAGE_KEYS.LAST_PROBLEM, STORAGE_KEYS.LAST_HINTS, STORAGE_KEYS.LAST_TIMESTAMP], () => {
-    showWelcomeMessage();
-    clearBtn.style.display = 'none';
-    updateStatus("History cleared");
-  });
+function updateStatus(message) {
+  statusDiv.textContent = message;
 }
 
 function setLoadingState(isLoading) {
@@ -113,11 +148,12 @@ function showSuccess(title, hints) {
   clearBtn.style.display = 'block';
 }
 
-function updateStatus(message) {
-  statusDiv.textContent = message;
-  setTimeout(() => {
-    statusDiv.textContent = '';
-  }, 3000);
+function clearHistory() {
+  chrome.storage.local.remove([STORAGE_KEYS.LAST_PROBLEM, STORAGE_KEYS.LAST_HINTS, STORAGE_KEYS.LAST_TIMESTAMP], () => {
+    showWelcomeMessage();
+    clearBtn.style.display = 'none';
+    updateStatus("History cleared");
+  });
 }
 
 function saveData(title, hints) {

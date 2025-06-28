@@ -1,24 +1,37 @@
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "GET_PROBLEM") {
-    console.log("📥 GET_PROBLEM received in content.js");
-    console.log("🔍 Current URL:", window.location.href);
+console.log("🔧 CodeBuddy content script loaded on:", window.location.href);
 
-    try {
-      // Wait a bit for the page to fully load
-      setTimeout(() => {
-        extractProblemData(sendResponse);
-      }, 1000);
-    } catch (err) {
-      console.error("❌ Error in message listener:", err);
-      sendResponse({ title: "", description: "" });
+// Ensure we only set up the listener once
+if (!window.codebuddyListenerSet) {
+  window.codebuddyListenerSet = true;
+  
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("📥 Message received in content script:", message.type);
+    
+    if (message.type === "GET_PROBLEM") {
+      console.log("📥 GET_PROBLEM received in content.js");
+      console.log("🔍 Current URL:", window.location.href);
+
+      // Check if we're on a LeetCode problem page
+      if (!window.location.href.includes('leetcode.com/problems/')) {
+        console.warn("❌ Not on a LeetCode problem page");
+        sendResponse({ title: "", description: "" });
+        return true;
+      }
+
+      // Extract problem data immediately and send response
+      const result = extractProblemData();
+      console.log("✅ Extracted data:", result);
+      sendResponse(result);
     }
-  }
 
-  return true;
-});
+    return true;
+  });
+}
 
-function extractProblemData(sendResponse) {
+function extractProblemData() {
   try {
+    console.log("🔍 Starting problem data extraction...");
+    
     // Try multiple selectors for the title
     const titleSelectors = [
       "h1",
@@ -115,13 +128,13 @@ function extractProblemData(sendResponse) {
       const allText = document.body.innerText;
       console.log("🔍 All page text preview:", allText.substring(0, 500));
       
-      sendResponse({ title: "", description: "" });
-      return;
+      return { title: "", description: "" };
     }
 
-    sendResponse({ title, description });
+    console.log("✅ Successfully extracted problem data");
+    return { title, description };
   } catch (err) {
     console.error("❌ Error extracting problem data:", err);
-    sendResponse({ title: "", description: "" });
+    return { title: "", description: "" };
   }
 }

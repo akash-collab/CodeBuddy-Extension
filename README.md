@@ -53,69 +53,121 @@ The extension requires a running backend server with:
 
 ### Environment Variables
 Make sure your backend has:
-- `GEMINI_API_KEY` - Your Google Gemini API key
-- `PORT=3000` - Server port (default: 3000)
+- `GEMINI_API_KEY`: Your Google Gemini API key
+- `MONGODB_URI`: MongoDB connection string (optional)
+- `PORT`: Server port (default: 3000)
 
-## 🎨 UI Features
+## 🔍 Troubleshooting
 
-### **Header**
-- Beautiful gradient background
-- CodeBuddy logo and branding
-- Clean, modern typography
+### Common Errors and Solutions
 
-### **Problem Section**
-- Shows the extracted problem title
-- Loading animation during extraction
-- Hover effects for better UX
+#### ❌ "Cannot read properties of undefined (reading 'title')"
+**Cause:** The extension couldn't extract problem data from the page.
+**Solutions:**
+- Make sure you're on a LeetCode problem page (URL contains `/problems/`)
+- Refresh the page and try again
+- Check that the extension is properly loaded in Chrome
 
-### **Hints Section**
-- Scrollable content area
-- Structured display of concepts, hints, and encouragement
-- Color-coded sections for easy reading
-- Custom scrollbar styling
+#### ❌ "Failed to load resource: net::ERR_TIMED_OUT"
+**Cause:** The backend server is not running or not accessible.
+**Solutions:**
+- Start the backend server: `cd backend && npm start`
+- Check that port 3000 is not blocked by firewall
+- Verify the backend URL in `chrome-extension/background.js`
 
-### **Actions**
-- Primary "Get Hints" button with loading states
-- Secondary "Clear History" button (appears after first use)
-- Hover animations and disabled states
+#### ❌ "Attempting to use a disconnected port object"
+**Cause:** Chrome extension messaging issue.
+**Solutions:**
+- Refresh the LeetCode page
+- Reload the extension in Chrome
+- Check browser console for additional errors
 
-### **Status Bar**
-- Real-time status updates
-- Page detection (LeetCode vs other sites)
-- Timestamp information for saved hints
+#### ❌ "API key not configured"
+**Cause:** Gemini API key is missing from backend configuration.
+**Solutions:**
+- Run `cd backend && npm run setup` to create `.env` file
+- Add your Gemini API key to the `.env` file
+- Get API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 
-## 🔒 Privacy & Security
+### Backend Setup Steps
 
-- **No data collection**: Hints are stored locally in your browser
-- **No tracking**: Extension doesn't send any personal data
-- **Secure**: Only communicates with your local backend server
-- **Transparent**: All code is open source and inspectable
+1. **Navigate to backend directory:**
+   ```bash
+   cd backend
+   ```
 
-## 🛠️ Technical Details
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-### **Architecture**
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Backend**: Node.js, Express, MongoDB
-- **AI**: Google Gemini API
-- **Storage**: Chrome Storage API
+3. **Run setup script:**
+   ```bash
+   npm run setup
+   ```
 
-### **File Structure**
+4. **Configure environment:**
+   - Edit the created `.env` file
+   - Add your Gemini API key
+   - Optionally configure MongoDB URI
+
+5. **Start the server:**
+   ```bash
+   npm start
+   ```
+
+6. **Test the API:**
+   ```bash
+   npm test
+   ```
+
+### Extension Setup Steps
+
+1. **Load the extension:**
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked" and select the `chrome-extension` folder
+
+2. **Verify installation:**
+   - You should see the CodeBuddy icon in your Chrome toolbar
+   - Click it to open the popup
+
+3. **Test on LeetCode:**
+   - Go to any LeetCode problem page
+   - Click the extension icon
+   - Click "Get Hints"
+
+## 🛠️ Development
+
+### Backend Development
+- **Start development server:** `npm run dev`
+- **Run tests:** `npm test`
+- **Setup environment:** `npm run setup`
+
+### Extension Development
+- **Reload extension:** Go to `chrome://extensions/` and click the refresh icon
+- **View console logs:** Right-click extension popup → Inspect
+
+## 📝 Project Structure
+
 ```
-chrome-extension/
-├── popup.html          # Main UI
-├── popup.js           # UI logic and storage
-├── background.js      # Message handling
-├── content.js         # Page extraction
-├── styles.css         # Modern styling
-├── manifest.json      # Extension config
-└── icons/            # Extension icons
+CodeBuddy-Extension/
+├── backend/                 # Node.js backend server
+│   ├── config/             # Database configuration
+│   ├── controllers/        # API controllers
+│   ├── models/            # Database models
+│   ├── routes/            # API routes
+│   ├── server.js          # Main server file
+│   └── package.json       # Backend dependencies
+├── chrome-extension/       # Chrome extension files
+│   ├── background.js      # Background script
+│   ├── content.js         # Content script
+│   ├── popup.html         # Extension popup
+│   ├── popup.js           # Popup logic
+│   ├── manifest.json      # Extension manifest
+│   └── styles.css         # Extension styles
+└── README.md              # This file
 ```
-
-### **Key Features**
-- **Content Script**: Extracts problem data from LeetCode pages
-- **Background Script**: Handles communication between popup and content
-- **Storage API**: Saves and restores hint data
-- **Message Passing**: Secure communication between extension parts
 
 ## 🎯 Use Cases
 
