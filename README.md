@@ -27,8 +27,13 @@ A Chrome extension that provides AI-powered hints and guidance for LeetCode prob
 - Loading states and error handling
 - Custom scrollbars and hover effects
 
-## 🚀 Installation
+## 🚀 Quick Start
 
+### **Option 1: Install from Chrome Web Store (Recommended)**
+1. **Coming Soon!** The extension will be available on the Chrome Web Store
+2. Click "Add to Chrome" and start using immediately
+
+### **Option 2: Manual Installation**
 1. **Clone or download** this repository
 2. **Open Chrome** and go to `chrome://extensions/`
 3. **Enable "Developer mode"** (toggle in top right)
@@ -43,7 +48,7 @@ A Chrome extension that provides AI-powered hints and guidance for LeetCode prob
 4. **Review** the generated concepts, hints, and encouragement
 5. **Close and reopen** the extension anytime - your hints will be saved!
 
-## 🔧 Setup Requirements
+## 🔧 Development Setup
 
 ### Backend Server
 The extension requires a running backend server with:
@@ -56,6 +61,20 @@ Make sure your backend has:
 - `GEMINI_API_KEY`: Your Google Gemini API key
 - `MONGODB_URI`: MongoDB connection string (optional)
 - `PORT`: Server port (default: 3000)
+
+## 🚀 Deployment
+
+### **Quick Deployment**
+```bash
+# Run the automated deployment script
+./deploy.sh
+```
+
+### **Manual Deployment**
+1. **Deploy Backend**: Follow the [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+2. **Update Extension**: Change backend URL in `chrome-extension/background.js`
+3. **Package Extension**: Run `cd chrome-extension && zip -r ../codebuddy-extension.zip .`
+4. **Upload to Chrome Web Store**: Follow the guide in [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 
 ## 🔍 Troubleshooting
 
@@ -166,6 +185,8 @@ CodeBuddy-Extension/
 │   ├── popup.js           # Popup logic
 │   ├── manifest.json      # Extension manifest
 │   └── styles.css         # Extension styles
+├── deploy.sh              # Automated deployment script
+├── DEPLOYMENT_GUIDE.md    # Detailed deployment instructions
 └── README.md              # This file
 ```
 
